@@ -1,0 +1,18 @@
+http://localhost:5000/TempHumidity/data
+####
+
+POST http://localhost:5000/TempHumidity/set HTTP/1.1
+content-type: application/json
+
+{
+    "value": 44
+}
+
+####
+
+POST http://localhost:5000/TempHumidity2/init HTTP/1.1
+content-type: application/json
+
+{
+    "url": "testing"
+}
