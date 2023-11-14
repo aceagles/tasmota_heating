@@ -13,6 +13,6 @@ services:
       - REDIS_HOST=redis
     restart: unless-stopped
   redis:
-    image: redis/redis-stack-server
+    image: redis
     ports:
       - "6379:6379"

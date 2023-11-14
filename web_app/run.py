@@ -13,16 +13,16 @@ redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db)
 @app.get('/<string:job>/data')
 def index(job):
     try:
-        status = redis_client.json().get(job)
+        status = redis_client.hgetall(job)
     except:
         abort(404)
-    return f"is_on {1 if status['is_on'] else 0} \nsetpoint {status['setpoint']}"
+    return f"is_on {status['is_on'] } \nsetpoint {status['setpoint']}"
 
 @app.post("/<string:job>/set")
 def setpoint(job):
     sp = request.json
     key = list(sp.keys())[0]
-    redis_client.json().set(job, f"$.{key}", sp[key])
+    redis_client.hset(job, key, sp[key])
     return jsonify(sp)
 
 @app.post("/<string:job>/init")
@@ -30,12 +30,12 @@ def init(job):
     url = request.json['url']
     metadata = {
         "url": url,
-        "active": False,
-        "is_on": False,
+        "active": 0,
+        "is_on": 0,
         "setpoint": 15,
         "delta": 2
     }
-    redis_client.json().set(job, "$", metadata)
+    redis_client.hmset(job, metadata)
     return jsonify(metadata)
 
 if __name__ == '__main__':
