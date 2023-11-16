@@ -8,7 +8,7 @@ redis_host = os.environ.get("REDIS_HOST", "localhost")
 redis_port = 6379
 redis_db = 0
 
-redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db)
+redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db, charset='utf-8', decode_responses=True)
 
 @app.get('/<string:job>/data')
 def index(job):
@@ -16,7 +16,7 @@ def index(job):
         status = redis_client.hgetall(job)
     except:
         abort(404)
-    return f"is_on {status['is_on'] } \nsetpoint {status['setpoint']}"
+    return f"is_on {status['is_on'] } \nsetpoint {status['setpoint']}\ndelta {status['delta']}\nactive {status['active']}"
 
 @app.post("/<string:job>/set")
 def setpoint(job):
@@ -38,5 +38,15 @@ def init(job):
     redis_client.hmset(job, metadata)
     return jsonify(metadata)
 
+@app.get("/<string:job>/active")
+def toggle_active(job):
+    new_val = 1- int(redis_client.hget(job, "active"))
+    
+    redis_client.hset(job, "active", new_val)
+    val_dict = {"status": "ON" if new_val == 1  else "OFF"}
+    return jsonify(val_dict)
+
+    
+
 if __name__ == '__main__':
-    app.run()
+    app.run(host="0.0.0.0")
