@@ -19,6 +19,7 @@ def index(job):
         status = redis_client.hgetall(job)
     except:
         abort(404)
+    # TODO - return all values that aren't strings and change booleans to numeric
     return f"is_on {status['is_on'] } \nsetpoint {status['setpoint']}\ndelta {status['delta']}\nactive {status['active']}"
 @cross_origin
 @app.post("/<string:job>/set")
