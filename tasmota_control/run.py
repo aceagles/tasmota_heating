@@ -37,6 +37,8 @@ while True:
                     mod = "On"
                 elif (value >= float(switch_info['setpoint'])):
                     mod = "Off"
+            else:
+                mod = "Off"
             try:
                 switch_query = f"{switch_info['url']}/cm?cmnd=Power%20{mod}"
                 print(switch_query)
