@@ -24,6 +24,7 @@ def central_toggle(mod, switch_info):
 
 while True:
     for job_name in redis_client.keys():
+        #TODO - Change job name here to be read from redis
         query = f'{prometheus}/api/v1/query?query=temperature{{job="{job_name}"}}'
         read_time = value = None
         x = requests.get(query).json()
@@ -45,6 +46,8 @@ while True:
                     mod = "On"
                 elif (value >= float(switch_info['setpoint'])):
                     mod = "Off"
+            else:
+                mod = "Off"
             try:
                 switch_toggle(mod, switch_info)
             except:

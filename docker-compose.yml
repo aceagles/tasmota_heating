@@ -2,6 +2,7 @@ version: '3'
 services:
   web:
     build: ./web_app
+    image: tasmota_heating_web
     ports:
       - "5000:5000"
     environment:
@@ -9,6 +10,7 @@ services:
     restart: unless-stopped
   app:
     build: ./tasmota_control
+    image: tasmota_heating_app
     environment:
       - REDIS_HOST=redis
     restart: unless-stopped
@@ -16,3 +18,9 @@ services:
     image: redis
     ports:
       - "6379:6379"
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
