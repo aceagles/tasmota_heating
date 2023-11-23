@@ -10,7 +10,7 @@ content-type: application/json
 
 ####
 
-POST http://localhost:5000/TempHumidity/init HTTP/1.1
+POST http://192.168.1.197/post HTTP/1.1
 content-type: application/json
 
 {

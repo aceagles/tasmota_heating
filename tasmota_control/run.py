@@ -12,7 +12,15 @@ redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db, 
 
 prometheus = os.environ.get("PROM_HOST", "http://192.168.1.140:9090/")
 
+def switch_toggle(mod, switch_info):
+    switch_query = f"{switch_info['url']}/cm?cmnd=Power%20{mod}"
+    print(switch_query)
+    is_on = requests.get(switch_query).json()['POWER'] == 'ON'
+    redis_client.hset(job_name, 'is_on',  int(is_on))
 
+def central_toggle(mod, switch_info):
+    switch_query = f"{switch_info['url']}/data?cmd={mod}"
+    return_data = requests.get(switch_query).json()
 
 while True:
     for job_name in redis_client.keys():
@@ -38,10 +46,7 @@ while True:
                 elif (value >= float(switch_info['setpoint'])):
                     mod = "Off"
             try:
-                switch_query = f"{switch_info['url']}/cm?cmnd=Power%20{mod}"
-                print(switch_query)
-                is_on = requests.get(switch_query).json()['POWER'] == 'ON'
-                redis_client.hset(job_name, 'is_on',  int(is_on))
+                switch_toggle(mod, switch_info)
             except:
                 print("unable to query")
         
