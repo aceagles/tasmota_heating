@@ -1,18 +1,18 @@
 http://localhost:5000/TempHumidity/data
 ####
 
-POST http://localhost:5000/TempHumidity/set HTTP/1.1
+POST http://192.168.1.140:5000/TempHumidity/set HTTP/1.1
 content-type: application/json
 
 {
-    "value": 44
+    "setpoint": 17
 }
 
 ####
 
-POST http://localhost:5000/TempHumidity2/init HTTP/1.1
+POST http://localhost:5000/TempHumidity/init HTTP/1.1
 content-type: application/json
 
 {
-    "url": "testing"
+    "url": "http://192.168.1.183"
 }
