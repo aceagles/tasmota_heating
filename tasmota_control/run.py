@@ -11,21 +11,16 @@ redis_db = 0
 redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db, charset='utf-8', decode_responses=True)
 
 prometheus = os.environ.get("PROM_HOST", "http://192.168.1.140:9090/")
-
-def switch_toggle(mod, switch_info):
-    switch_query = f"{switch_info['url']}/cm?cmnd=Power%20{mod}"
-    print(switch_query)
-    is_on = requests.get(switch_query).json()['POWER'] == 'ON'
-    redis_client.hset(job_name, 'is_on',  int(is_on))
-
-def central_toggle(mod, switch_info):
-    switch_query = f"{switch_info['url']}/data?cmd={mod}"
-    return_data = requests.get(switch_query).json()
+  
 
 while True:
     for job_name in redis_client.keys():
-        #TODO - Change job name here to be read from redis
-        query = f'{prometheus}/api/v1/query?query=temperature{{job="{job_name}"}}'
+        switch_info = redis_client.hgetall(job_name)
+        if 'sensor' in switch_info:
+            sensor = switch_info['sensor']
+        else:
+            sensor = job_name
+        query = f'{prometheus}/api/v1/query?query=temperature{{job="{sensor}"}}'
         read_time = value = None
         x = requests.get(query).json()
         # Check if there were any matching results
@@ -36,21 +31,28 @@ while True:
             # Parse the returned values 
             read_time = datetime.fromtimestamp(tmp[0])
             value = float(tmp[1])
-            print(read_time, value)
-            switch_info = redis_client.hgetall(job_name)
-            print(switch_info)
+            
             mod = ""
             if(int(switch_info['active']) > 0):
-                print("Is Actives")
+                print("Is Active")
                 if (value <= float(switch_info['setpoint']) - float(switch_info['delta'])):
                     mod = "On"
                 elif (value >= float(switch_info['setpoint'])):
                     mod = "Off"
             else:
                 mod = "Off"
-            try:
-                switch_toggle(mod, switch_info)
-            except:
-                print("unable to query")
+            
+            if switch_info['type'] == "central":
+                switch_query = f"{switch_info['url']}/data?cmd={mod}"
+                return_data = requests.get(switch_query).json()
+                for key in list(return_data.keys()):
+                    if type(return_data[key]) :
+                        return_data[key] = 1 if return_data[key] else 0
+                    redis_client.hset(job_name, key, return_data[key])
+            else:
+                switch_query = f"{switch_info['url']}/cm?cmnd=Power%20{mod}"
+                is_on = requests.get(switch_query).json()['POWER'] == 'ON'
+                redis_client.hset(job_name, 'is_on',  int(is_on))
+            
         
         time.sleep(10)

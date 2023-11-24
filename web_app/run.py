@@ -20,7 +20,15 @@ def index(job):
     except:
         abort(404)
     # TODO - return all values that aren't strings and change booleans to numeric
-    return f"is_on {status['is_on'] } \nsetpoint {status['setpoint']}\ndelta {status['delta']}\nactive {status['active']}"
+    return_string = ""
+    print(status)
+    for key in list(status.keys()):
+        
+        try:
+            return_string += f"{key} {float(status[key])}\n"
+        except ValueError:
+            pass
+    return return_string
 @cross_origin
 @app.post("/<string:job>/set")
 def setpoint(job):

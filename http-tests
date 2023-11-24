@@ -1,11 +1,12 @@
-http://localhost:5000/TempHumidity/data
+http://localhost:5000/HouseHeating/data
 ####
 
-POST http://192.168.1.140:5000/TempHumidity/set HTTP/1.1
+POST http://localhost:5000/HouseHeating/set HTTP/1.1
 content-type: application/json
 
 {
-    "setpoint": 17
+    "setpoint": 15,
+    "active": 1
 }
 
 ####
@@ -15,4 +16,13 @@ content-type: application/json
 
 {
     "url": "http://192.168.1.183"
+}
+
+####
+
+POST http://localhost:5000/HouseHeating/init HTTP/1.1
+content-type: application/json
+
+{
+    "url": "http://192.168.1.113"
 }
