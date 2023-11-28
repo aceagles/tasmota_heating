@@ -23,7 +23,7 @@ def is_within_5_minutes(time_string):
     time_difference = datetime.combine(datetime.today(), current_time) - datetime.combine(datetime.today(), specified_time)
 
     # Check if the absolute difference is within 5 minutes
-    return abs(time_difference) <= timedelta(minutes=5)
+    return abs(time_difference) <= timedelta(minutes=1)
 
 
 
@@ -80,4 +80,4 @@ while True:
             except requests.exceptions.ConnectionError:
                 print("Unable to Query")
         
-        time.sleep(10)
+    time.sleep(10)
