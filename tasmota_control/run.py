@@ -1,6 +1,6 @@
 import requests
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import redis
 
@@ -11,11 +11,35 @@ redis_db = 0
 redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db, charset='utf-8', decode_responses=True)
 
 prometheus = os.environ.get("PROM_HOST", "http://192.168.1.140:9090/")
-  
+
+def is_within_5_minutes(time_string):
+    # Parse the current time
+    current_time = datetime.now().time()
+
+    # Parse the specified time string
+    specified_time = datetime.strptime(time_string, "%H:%M").time()
+
+    # Calculate the time difference
+    time_difference = datetime.combine(datetime.today(), current_time) - datetime.combine(datetime.today(), specified_time)
+
+    # Check if the absolute difference is within 5 minutes
+    return abs(time_difference) <= timedelta(minutes=5)
+
+
 
 while True:
     for job_name in redis_client.keys():
         switch_info = redis_client.hgetall(job_name)
+
+        if "start_time" in switch_info:
+            if is_within_5_minutes(switch_info["start_time"]):
+                switch_info["active"] = 1
+                redis_client.hset(job_name, "active", 1)
+        if "end_time" in switch_info:
+            if is_within_5_minutes(switch_info["end_time"]):
+                switch_info["active"] = 0
+                redis_client.hset(job_name, "active", 0)
+
         if 'sensor' in switch_info:
             sensor = switch_info['sensor']
         else:
