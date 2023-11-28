@@ -41,18 +41,19 @@ while True:
                     mod = "Off"
             else:
                 mod = "Off"
-            
-            if switch_info['type'] == "central":
-                switch_query = f"{switch_info['url']}/data?cmd={mod}"
-                return_data = requests.get(switch_query).json()
-                for key in list(return_data.keys()):
-                    if type(return_data[key]) :
-                        return_data[key] = 1 if return_data[key] else 0
-                    redis_client.hset(job_name, key, return_data[key])
-            else:
-                switch_query = f"{switch_info['url']}/cm?cmnd=Power%20{mod}"
-                is_on = requests.get(switch_query).json()['POWER'] == 'ON'
-                redis_client.hset(job_name, 'is_on',  int(is_on))
-            
+            try:
+                if 'type' in switch_info and switch_info['type'] == "central":
+                    switch_query = f"{switch_info['url']}/data?cmd={mod}"
+                    return_data = requests.get(switch_query, timeout=5).json()
+                    for key in list(return_data.keys()):
+                        if type(return_data[key]) :
+                            return_data[key] = 1 if return_data[key] else 0
+                        redis_client.hset(job_name, key, return_data[key])
+                else:
+                    switch_query = f"{switch_info['url']}/cm?cmnd=Power%20{mod}"
+                    is_on = requests.get(switch_query, timeout=5).json()['POWER'] == 'ON'
+                    redis_client.hset(job_name, 'is_on',  int(is_on))
+            except requests.exceptions.ConnectionError:
+                print("Unable to Query")
         
         time.sleep(10)

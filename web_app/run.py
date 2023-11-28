@@ -39,7 +39,8 @@ def setpoint(job):
 
 @app.post("/<string:job>/init")
 def init(job):
-    url = request.json['url']
+    json_data = request.json
+    url = json_data['url']
     metadata = {
         "url": url,
         "active": 0,
@@ -47,6 +48,8 @@ def init(job):
         "setpoint": 15,
         "delta": 2
     }
+    for key in list(json_data):
+        metadata[key] = json_data[key]
     redis_client.hmset(job, metadata)
     return jsonify(metadata)
 
