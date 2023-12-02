@@ -28,7 +28,7 @@ def is_within_5_minutes(time_string):
 
 
 while True:
-    for job_name in redis_client.keys():
+    for job_name in redis_client.smembers("heating_controllers"):
         switch_info = redis_client.hgetall(job_name)
 
         if "start_time" in switch_info:
