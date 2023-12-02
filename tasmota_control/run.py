@@ -54,6 +54,7 @@ while True:
             tmp = x['data']['result'][0]["value"]
             # Parse the returned values 
             read_time = datetime.fromtimestamp(tmp[0])
+            # TODO - deactivate if sensor data is too old
             value = float(tmp[1])
             
             mod = ""
