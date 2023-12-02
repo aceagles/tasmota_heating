@@ -2,7 +2,7 @@ from flask import Flask, abort, request, jsonify
 import redis
 import os
 from flask_cors import CORS, cross_origin
-
+from datetime import datetime
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -51,6 +51,8 @@ def init(job):
     for key in list(json_data):
         metadata[key] = json_data[key]
     redis_client.hmset(job, metadata)
+    # This registers the controller to be evaluated by the setpoint process
+    redis_client.sadd("heating_controllers", job)
     return jsonify(metadata)
 
 @app.get("/<string:job>/json")
@@ -66,10 +68,27 @@ def toggle_active(job):
     val_dict = {"status": "ON" if new_val == 1  else "OFF"}
     return jsonify(val_dict)
 
+@app.get("/blesensors")
+def blesensors():
+    sensors = redis_client.smembers("bluetooth_sensors")
+    return_string = ""
+    now_stamp = datetime.now().timestamp()
+    for sensor in sensors:
+        data = redis_client.hgetall(sensor)
+        # If sensor has been named and the latest reading was within 2 minutes
+        if "name" in data and now_stamp - float(data['time']) <= 120:
+            for key in list(data.keys()):
+        
+                try:
+                    return_string += f"""{key}{{name="{data['name']}"}} {float(data[key])}\n"""
+                except ValueError:
+                    pass
+    return return_string
+
 @app.get("/")
 def index():
     return "here!"
     
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0")
+    app.run(host="0.0.0.0", port=5001)
