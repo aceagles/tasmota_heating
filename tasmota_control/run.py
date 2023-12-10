@@ -39,12 +39,15 @@ while True:
             if is_within_5_minutes(switch_info["end_time"]):
                 switch_info["active"] = 0
                 redis_client.hset(job_name, "active", 0)
-
-        if 'sensor' in switch_info:
-            sensor = switch_info['sensor']
+        sensor_name = ""
+        if 'job' in switch_info:
+            sensor = switch_info['job']
+            if 'sensor_name' in switch_info:
+                sensor_name = f',name="{switch_info["sensor_name"]}"'
         else:
             sensor = job_name
-        query = f'{prometheus}/api/v1/query?query=temperature{{job="{sensor}"}}'
+
+        query = f'{prometheus}/api/v1/query?query=temperature{{job="{sensor}"{sensor_name}}}'
         read_time = value = None
         x = requests.get(query).json()
         # Check if there were any matching results
