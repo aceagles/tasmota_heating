@@ -67,8 +67,7 @@ while True:
                     mod = "On"
                 elif (value >= float(switch_info['setpoint'])):
                     mod = "Off"
-            else:
-                mod = "Off"
+            
             try:
                 if 'type' in switch_info and switch_info['type'] == "central":
                     switch_query = f"{switch_info['url']}/data?cmd={mod}"
